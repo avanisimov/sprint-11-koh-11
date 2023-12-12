@@ -1,9 +1,12 @@
 package ru.yandex.practicum.sprint11koh11
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import java.text.DateFormat
 
 class NewsAdapter : RecyclerView.Adapter<NewsItemViewHolder>() {
@@ -38,6 +41,8 @@ class NewsItemViewHolder(
 
     private val title: TextView = itemView.findViewById(R.id.title)
     private val created: TextView = itemView.findViewById(R.id.created)
+    private val sportTeams: TextView = itemView.findViewById(R.id.sport_teams)
+    private val scienceImg: ImageView = itemView.findViewById(R.id.science_img)
 
     fun bind(item: NewsItem) {
         title.text = item.title
@@ -47,5 +52,25 @@ class NewsItemViewHolder(
                 DateFormat.SHORT
             ).format(item.created)
 
+        when (item) {
+            is NewsItem.Science -> {
+                Glide.with(scienceImg.context)
+                    .load(item.specificPropertyForScience)
+                    .into(scienceImg)
+                scienceImg.visibility = View.VISIBLE
+                sportTeams.visibility = View.GONE
+            }
+
+            is NewsItem.Sport -> {
+                sportTeams.text = item.specificPropertyForSport.uppercase()
+                sportTeams.visibility = View.VISIBLE
+                scienceImg.visibility = View.GONE
+            }
+
+            is NewsItem.Default -> {
+                sportTeams.visibility = View.GONE
+                scienceImg.visibility = View.GONE
+            }
+        }
     }
 }

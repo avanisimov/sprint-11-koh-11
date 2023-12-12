@@ -49,16 +49,28 @@ class MainActivity : AppCompatActivity() {
                 GsonConverterFactory.create(
                     GsonBuilder()
                         .registerTypeAdapter(Date::class.java, CustomDateTypeAdapter())
+                        .registerTypeAdapter(NewsItem::class.java, NewsItemTypeAdapter())
                         .create()
                 )
             )
             .build()
         val serverApi = retrofit.create(Sprint11ServerApi::class.java)
 
-        serverApi.getNews1().enqueue(object : Callback<NewsResponse> {
+
+        val javaClass: Class<NewsItem.Science> = NewsItem.Science::class.java
+        javaClass.declaredFields.forEach { method ->
+            method.annotations.forEach {
+                Log.d(TAG, "annotation $it")
+            }
+        }
+
+        val call: Call<NewsResponse> = serverApi.getNews1()
+        call.enqueue(object : Callback<NewsResponse> {
             override fun onResponse(call: Call<NewsResponse>, response: Response<NewsResponse>) {
                 Log.i(TAG, "onResponse: ${response.body()}")
-                adapter.items = response.body()?.data?.items ?: emptyList()
+                adapter.items = response.body()?.data?.items?.filter {
+                    it !is NewsItem.Default
+                } ?: emptyList()
             }
 
             override fun onFailure(call: Call<NewsResponse>, t: Throwable) {
@@ -74,6 +86,7 @@ class MainActivity : AppCompatActivity() {
 interface Sprint11ServerApi {
 
 
-    @GET("main/jsons/news_1.json")
+    @GET("main/jsons/news_2.json")
     fun getNews1(): Call<NewsResponse>
+
 }
